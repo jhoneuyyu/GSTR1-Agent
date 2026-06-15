@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST Analyst Agent | Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-light: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #7c3aed;
+            --accent: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-main);
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(124, 58, 237, 0.03) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        .wrapper {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* Sidebar Alignment */
+        #sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 1rem;
+            z-index: 10;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+        }
+
+        .brand-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 0.5rem;
+        }
+        
+        .brand-logo i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+            width: 30px; /* Fixed width for perfect text alignment */
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            color: var(--text-main);
+            background: #f1f5f9;
+        }
+
+        .nav-item.active {
+            background: #eff6ff;
+            color: var(--primary);
+            border-color: #dbeafe;
+        }
+
+        /* Main Content */
+        #content {
+            flex-grow: 1;
+            padding: 2rem 3rem;
+            overflow-y: auto;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease forwards;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Upload Section */
+        .upload-box {
+            border: 2px dashed #93c5fd;
+            border-radius: 1rem;
+            padding: 4rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .upload-box:hover {
+            background: #eff6ff;
+            border-color: var(--primary);
+        }
+
+        /* Dashboard Typography */
+        .metric-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--text-main);
+        }
+
+        .table {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-main);
+            --bs-table-border-color: var(--card-border);
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            font-weight: 500;
+            color: var(--text-muted);
+            border-bottom-width: 1px;
+        }
+
+        /* Quality Checks styling */
+        .quality-box {
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid transparent;
+        }
+        
+        /* Chat specific styles */
+        #chat-history {
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .wrapper {
+                flex-direction: column;
+                height: auto;
+            }
+            #sidebar {
+                width: 100%;
+                min-width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--card-border);
+                padding: 1rem;
+            }
+            #content {
+                padding: 1rem;
+                overflow-x: hidden;
+            }
+            .brand-logo {
+                margin-bottom: 1rem;
+                justify-content: center;
+            }
+            .nav-menu {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            .nav-item {
+                flex: 1 1 auto;
+                text-align: center;
+                justify-content: center;
+                padding: 0.5rem;
+            }
+            .nav-item i {
+                width: auto;
+                margin-right: 5px;
+            }
+            .nav-item span {
+                font-size: 0.9rem;
+            }
+            .glass-card {
+                padding: 1rem !important;
+            }
+        }
+        
+        /* Chat UI */
+        .chat-container {
+            max-width: 900px;
+            margin: 0 auto;
+            height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            overflow-y: auto;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .chat-msg {
+            max-width: 85%;
+            padding: 0.85rem 1.25rem;
+            border-radius: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .chat-msg.user {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .chat-msg.bot {
+            background: #f1f5f9;
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-left-radius: 0.25rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .text-purple { color: var(--secondary) !important; }
+        .text-primary { color: var(--primary) !important; }
+        .text-success { color: var(--accent) !important; }
+        .text-warning { color: var(--warning) !important; }
+        .text-danger { color: var(--danger) !important; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="brand-logo">
+            <i class="bi bi-box-fill"></i> GST Analyst
+        </div>
+        
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="switchView('upload-view', this)">
+                <i class="bi bi-cloud-upload"></i> <span>Upload Data</span>
+            </div>
+            <div class="nav-item" id="nav-summary" onclick="switchView('summary-view', this)" style="display: none;">
+                <i class="bi bi-grid-1x2"></i> <span>Dashboard</span>
+            </div>
+            <div class="nav-item" id="nav-agent" onclick="switchView('agent-view', this)" style="display: none;">
+                <i class="bi bi-robot"></i> <span>AI Agent</span>
+            </div>
+            <a href="/logout" class="nav-item text-danger text-decoration-none mt-3" style="border: 1px solid #fee2e2;">
+                <i class="bi bi-box-arrow-right"></i> <span>Logout</span>
+            </a>
+        </div>
+
+
+    </nav>
+
+    <!-- Main Content -->
+    <div id="content">
+        
+        <!-- 1. Upload View -->
+        <div id="upload-view" class="view-section active">
+            <div class="d-flex flex-column justify-content-center align-items-center h-100" style="min-height: 70vh;">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold mb-2">Data Ingestion</h2>
+                    <p class="text-muted">Upload your Excel files to generate insights and summaries.</p>
+                </div>
+
+                <form id="uploadForm" class="w-100">
+                    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+                        <i class="bi bi-file-earmark-spreadsheet display-4 text-primary mb-3"></i>
+                        <h4 style="color: var(--text-main);">Select Excel Files</h4>
+                        <p class="text-muted mb-0">Drag and drop or click to browse</p>
+                        <p class="small text-muted mt-2">Required: Sales Register, Credit Notes, Exports</p>
+                        <input type="file" id="fileInput" name="files" multiple accept=".xlsx,.xls,.csv" style="display: none;">
+                    </div>
+                    
+                    <div id="file-list" class="mt-4 text-center text-primary fw-medium"></div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill fw-semibold shadow-sm" id="uploadBtn" disabled>
+                            <i class="bi bi-lightning-charge-fill me-1"></i> Analyze Data
+                        </button>
+                    </div>
+                </form>
+
+                <div id="loading-spinner" class="text-center mt-5" style="display: none;">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
+                    <h5 class="text-muted">Analyzing Data with AI...</h5>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Dashboard View -->
+        <div id="summary-view" class="view-section">
+            <header class="mb-4 d-flex justify-content-between align-items-end">
+                <div>
+                    <h2 class="fw-bold mb-1">Executive Summary</h2>
+                    <p class="text-muted mb-0">Overview of your GSTR-1 metrics and AI insights</p>
+                </div>
+            </header>
+
+            <!-- Row 1: High Level Metrics -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="glass-card" style="border-top: 4px solid var(--primary);">
+                        <div class="metric-title">Total Invoices</div>
+                        <div class="metric-value text-primary" id="val-invoices">0</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card" style="border-top: 4px solid var(--accent);">
+                        <div class="metric-title">Total Taxable Value</div>
+                        <div class="metric-value text-success" id="val-taxable">₹0</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card" style="border-top: 4px solid var(--warning);">
+                        <div class="metric-title">Total GST Liability</div>
+                        <div class="metric-value text-warning" id="val-gst">₹0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Tables Estimate (Full Width or side by side with Quality Checks) -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="glass-card d-flex flex-column">
+                        <h5 class="mb-3 d-flex align-items-center fw-semibold">
+                            <i class="bi bi-table me-2 text-primary fs-5"></i> GSTR-1 Tables Estimate
+                        </h5>
+                        <div class="table-responsive flex-grow-1">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th class="text-end">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="py-3">B2B</td><td class="text-end fw-semibold py-3" id="tbl-b2b">₹0</td></tr>
+                                    <tr><td class="py-3">B2C</td><td class="text-end fw-semibold py-3" id="tbl-b2c">₹0</td></tr>
+                                    <tr><td class="py-3">Exports</td><td class="text-end fw-semibold py-3" id="tbl-exp">₹0</td></tr>
+                                    <tr><td class="py-3">Credit Notes</td><td class="text-end fw-semibold py-3" id="tbl-notes">₹0</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Row 4: Executive Dashboard (Injected from Python) -->
+            <div class="glass-card mb-4" style="background: linear-gradient(145deg, #ffffff, #fdfbfe); border-color: #e9d5ff;">
+                <div id="ai-insights" class="lh-lg text-muted flex-grow-1" style="font-size: 0.95rem;">
+                    <!-- AI insights injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. AI Agent View -->
+        <div id="agent-view" class="view-section">
+            <div class="chat-container">
+                <header class="mb-3">
+                    <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                        <i class="bi bi-robot text-purple"></i> AI Assistant
+                    </h3>
+                    <p class="text-muted mb-0 small">Ask me anything about your uploaded GST data.</p>
+                </header>
+
+                <div class="chat-box" id="chat-history">
+                    <div class="chat-msg bot">Hi! I'm your GST Analyst Agent. I've processed your data. What would you like to know?</div>
+                </div>
+                
+                <div class="input-group shadow-sm">
+                    <input type="text" id="chat-input" class="form-control p-3 border-secondary" placeholder="e.g. What is the total export value?" style="border-radius: 0.75rem 0 0 0.75rem;">
+                    <button class="btn btn-primary px-4" type="button" id="chat-btn" style="border-radius: 0 0.75rem 0.75rem 0;">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function switchView(viewId, element) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        let files = e.target.files;
+        if(files.length > 0) {
+            let fileNames = Array.from(files).map(f => `<div class="mb-1"><i class="bi bi-file-earmark-check me-2"></i>${f.name}</div>`).join('');
+            document.getElementById('file-list').innerHTML = fileNames;
+            document.getElementById('uploadBtn').disabled = false;
+        } else {
+            document.getElementById('file-list').innerHTML = '';
+            document.getElementById('uploadBtn').disabled = true;
+        }
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        let formData = new FormData(this);
+        document.getElementById('uploadBtn').style.display = 'none';
+        document.getElementById('loading-spinner').style.display = 'block';
+
+        try {
+            let res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            let data = await res.json();
+            
+            if(data.error) throw new Error(data.error);
+
+            const stats = data.stats;
+            document.getElementById('val-invoices').textContent = stats.total_invoices.toLocaleString();
+            document.getElementById('val-taxable').textContent = '₹' + stats.taxable_value.toLocaleString(undefined, {minimumFractionDigits:2});
+            document.getElementById('val-gst').textContent = '₹' + stats.total_gst.toLocaleString(undefined, {minimumFractionDigits:2});
+            
+            document.getElementById('tbl-b2b').textContent = '₹' + stats.categories.B2B.toLocaleString(undefined, {minimumFractionDigits:2});
+            document.getElementById('tbl-b2c').textContent = '₹' + stats.categories.B2C.toLocaleString(undefined, {minimumFractionDigits:2});
+            document.getElementById('tbl-exp').textContent = '₹' + stats.categories.Exports.toLocaleString(undefined, {minimumFractionDigits:2});
+            document.getElementById('tbl-notes').textContent = '₹' + stats.categories['Credit Notes'].toLocaleString(undefined, {minimumFractionDigits:2});
+
+            document.getElementById('ai-insights').innerHTML = stats.insights;
+
+            document.getElementById('nav-summary').style.display = 'flex';
+            document.getElementById('nav-agent').style.display = 'flex';
+
+            switchView('summary-view', document.getElementById('nav-summary'));
+
+        } catch(err) {
+            alert('Error: ' + err.message);
+            document.getElementById('uploadBtn').style.display = 'inline-block';
+        } finally {
+            document.getElementById('loading-spinner').style.display = 'none';
+        }
+    });
+
+    async function sendMessage() {
+        let input = document.getElementById('chat-input');
+        let question = input.value.trim();
+        if(!question) return;
+
+        let history = document.getElementById('chat-history');
+        
+        history.innerHTML += `<div class="chat-msg user">${question}</div>`;
+        input.value = '';
+        history.scrollTop = history.scrollHeight;
+
+        let loaderId = 'loader-' + Date.now();
+        history.innerHTML += `<div class="chat-msg bot" id="${loaderId}"><i class="bi bi-three-dots" style="font-size: 1.5rem; line-height: 0.5;"></i></div>`;
+        history.scrollTop = history.scrollHeight;
+
+        try {
+            let res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({question: question})
+            });
+            let data = await res.json();
+            
+            document.getElementById(loaderId).remove();
+            if(data.error) throw new Error(data.error);
+
+            history.innerHTML += `<div class="chat-msg bot">${data.answer}</div>`;
+        } catch(err) {
+            document.getElementById(loaderId).remove();
+            history.innerHTML += `<div class="chat-msg bot text-danger">Error: ${err.message}</div>`;
+        }
+        history.scrollTop = history.scrollHeight;
+    }
+
+    document.getElementById('chat-btn').addEventListener('click', sendMessage);
+    document.getElementById('chat-input').addEventListener('keypress', function(e) {
+        if(e.key === 'Enter') sendMessage();
+    });
+</script>
+</body>
+</html>
